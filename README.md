@@ -5,9 +5,8 @@ messages against a set of predefined rules, and falls back to a live Wikipedia
 lookup when nothing matches — so it can hold a basic conversation *and* answer
 general knowledge questions.
 
-**Live demo:** <ADD-YOUR-STREAMLIT-LINK-HERE>
-
-![screenshot](docs/screenshot.png)
+**Live demo:** https://rule-based-chat-assistant-vugiaxwlw65fryjymeq3tr.streamlit.app
+![demo](demo.gif)
 
 ## How it works
 
