@@ -5,13 +5,12 @@ Intelligent Rule-Based Assistant (Web App - Streamlit)
 Features:
 - Conditional conversation bot with clean input processing
 - Pre-mapped responses for common intents (greetings, thanks, bot info, etc.)
-- Upgrade: for unknown queries, scrapes a real-time Wikipedia summary
-  using requests + BeautifulSoup
+- Upgrade: for unknown queries, fetches a real-time Wikipedia summary
+  using Wikipedia's official REST API
 """
 
 import re
 import requests
-from bs4 import BeautifulSoup
 import streamlit as st
 
 # ----------------------------
@@ -39,52 +38,35 @@ def clean_input(text):
 
 
 def match_rule(user_input):
-    """Check the cleaned input against known rule keywords."""
+    """Check the cleaned input against known rule keywords using whole-word matching."""
     cleaned = clean_input(user_input)
+    words = set(cleaned.split())
     for keywords, response in RULES:
         for keyword in keywords:
-            if keyword in cleaned:
+            # match whole words/phrases, not substrings
+            if " " in keyword:
+                if keyword in cleaned:
+                    return response
+            elif keyword in words:
                 return response
     return None
 
 
-def scrape_wikipedia_summary(query):
+def get_wikipedia_summary(query):
     """
     Upgrade feature: for queries with no matching rule, fetch a short
-    real-time summary from Wikipedia using requests + BeautifulSoup.
+    real-time summary from Wikipedia's official REST API.
     """
     try:
-        search_url = "https://en.wikipedia.org/w/index.php"
-        params = {"search": query, "title": "Special:Search", "fulltext": "1"}
-        headers = {"User-Agent": "Mozilla/5.0 (InternGrow-RuleBasedAssistant)"}
-
-        response = requests.get(search_url, params=params, headers=headers, timeout=8)
-        response.raise_for_status()
-
-        # If Wikipedia redirected straight to an article page, use it directly.
-        # Otherwise, grab the first search result link.
-        soup = BeautifulSoup(response.text, "html.parser")
-
-        if "Special:Search" in response.url:
-            first_result = soup.select_one("div.mw-search-result-heading a")
-            if not first_result:
-                return None
-            article_url = "https://en.wikipedia.org" + first_result["href"]
-        else:
-            article_url = response.url
-
-        article_response = requests.get(article_url, headers=headers, timeout=8)
-        article_soup = BeautifulSoup(article_response.text, "html.parser")
-
-        paragraphs = article_soup.select("#mw-content-text p")
-        for p in paragraphs:
-            text = p.get_text().strip()
-            if text and len(text) > 60:
-                # Trim to a short summary (first 2-3 sentences)
-                sentences = re.split(r"(?<=[.!?])\s+", text)
-                summary = " ".join(sentences[:3])
-                return summary, article_url
-
+        url = f"https://en.wikipedia.org/api/rest_v1/page/summary/{query.replace(' ', '_')}"
+        headers = {"User-Agent": "InternGrow-RuleBasedAssistant/1.0"}
+        resp = requests.get(url, headers=headers, timeout=8)
+        if resp.status_code == 200:
+            data = resp.json()
+            extract = data.get("extract")
+            page_url = data.get("content_urls", {}).get("desktop", {}).get("page")
+            if extract:
+                return extract, page_url
         return None
     except requests.RequestException:
         return None
@@ -115,10 +97,10 @@ if st.button("Send") and user_input.strip():
         bot_response = rule_response
     else:
         with st.spinner("Looking that up on Wikipedia..."):
-            result = scrape_wikipedia_summary(user_input)
+            result = get_wikipedia_summary(user_input)
         if result:
             summary, url = result
-            bot_response = f"{summary}\n\n(Source: {url})"
+            bot_response = f"{summary}\n\n(Source: {url})" if url else summary
         else:
             bot_response = "Sorry, I couldn't find a rule or a Wikipedia match for that. Try rephrasing?"
 
