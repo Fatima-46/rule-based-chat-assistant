@@ -59,7 +59,7 @@ def get_wikipedia_summary(query):
     """
     try:
         url = f"https://en.wikipedia.org/api/rest_v1/page/summary/{query.replace(' ', '_')}"
-        headers = {"User-Agent": "InternGrow-RuleBasedAssistant/1.0"}
+       headers = {"User-Agent": "RuleBasedChatAssistant/1.0"}
         resp = requests.get(url, headers=headers, timeout=8)
         if resp.status_code == 200:
             data = resp.json()
@@ -77,7 +77,7 @@ def get_wikipedia_summary(query):
 # ----------------------------
 st.set_page_config(page_title="Rule-Based Assistant", page_icon="🤖")
 st.title("🤖 Intelligent Rule-Based Assistant")
-st.caption("InternGrow Python Programming Track — Task 4")
+
 
 st.write(
     "Try greetings like *hello*, *how are you*, *your name*, *joke*, or *help*. "
