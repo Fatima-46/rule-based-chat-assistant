@@ -1,30 +1,73 @@
-# InternGrow_RuleBasedAssistant
+# Rule-Based Chat Assistant
 
-Intelligent Rule-Based Assistant built with Python and Streamlit.
+A conversational assistant built in Python with a Streamlit UI. It matches user
+messages against a set of predefined rules, and falls back to a live Wikipedia
+lookup when nothing matches — so it can hold a basic conversation *and* answer
+general knowledge questions.
 
-[![Live App](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://interngrowrulebasedassistant-6tr9py2ms3sm7fxznwk2hu.streamlit.app/)
+**Live demo:** <ADD-YOUR-STREAMLIT-LINK-HERE>
 
-**🔗 Live Demo:** [interngrowrulebasedassistant-6tr9py2ms3sm7fxznwk2hu.streamlit.app](https://interngrowrulebasedassistant-6tr9py2ms3sm7fxznwk2hu.streamlit.app/)
+![screenshot](docs/screenshot.png)
 
-## Features
-- Conditional conversation bot with clean input processing (lowercasing, punctuation stripping)
-- Pre-mapped responses for common intents: greetings, thanks, bot identity, jokes, help, etc.
-- Upgrade: for unknown queries, scrapes a real-time summary from Wikipedia using `requests` + `BeautifulSoup`
-- Simple chat-style interface with conversation history
+## How it works
 
-## Run locally
+1. The user's message is cleaned (lowercased, punctuation stripped).
+2. It's checked against a table of rules (`RULES`), each mapping a set of
+   keywords to a canned response, using word-boundary matching so short
+   keywords like `"hi"` don't accidentally match inside unrelated words.
+3. If no rule matches, the app queries the
+   [Wikipedia REST summary API](https://en.wikipedia.org/api/rest_v1/page/summary/)
+   for the user's message and returns the summary (with a link to the full
+   article) instead of a dead end.
+4. Streamlit renders the chat interface and keeps message history in session
+   state.
+
+## Tech stack
+
+- Python 3
+- Streamlit — UI
+- Requests — Wikipedia REST API calls
+- Pytest — unit tests
+
+## Project structure
+.
+├── app.py # main Streamlit app: rules, matching, Wikipedia fallback
+├── test_app.py # unit tests for the matching logic
+├── requirements.txt
+└── README.md
+## Key concepts to know before reading the code
+
+- **Rule-based NLP matching** — how keyword/intent tables work before you get
+  to ML-based intent classification.
+- **Word-boundary vs. substring matching** — why `"hi" in "this is weird"`
+  is a bug, not a feature.
+- **Consuming a REST API** — sending a GET request, checking the status code,
+  parsing JSON, handling network failures gracefully.
+- **Streamlit session state** — how the chat history persists across reruns
+  without a database.
+
+## Running locally
+
 ```bash
+git clone https://github.com/Fatima-46/rule-based-chat-assistant.git
+cd rule-based-chat-assistant
 pip install -r requirements.txt
 streamlit run app.py
 ```
 
-## Deploy live for free (Streamlit Community Cloud)
-1. Push `app.py`, `requirements.txt`, and this `README.md` to a GitHub repo
-2. Go to https://share.streamlit.io and sign in with GitHub
-3. Click "New app", pick the repo, branch `main`, main file `app.py`
-4. Click "Deploy" — you'll get a free public URL
+## Running tests
 
-## InternGrow Submission
-- GitHub repo: `InternGrow_RuleBasedAssistant`
-- Live app link: https://interngrowrulebasedassistant-6tr9py2ms3sm7fxznwk2hu.streamlit.app/
-- Record a short video walking through the code + live app, post on LinkedIn tagging @InternGrow, and submit via the WhatsApp submission form
+```bash
+pytest
+```
+
+## Possible extensions
+
+- Swap the rule table for an intent classifier (e.g. scikit-learn or a small
+  transformer) to compare rule-based vs. ML-based matching.
+- Add conversation memory so follow-up questions use prior context.
+- Deploy behind a simple FastAPI backend instead of only Streamlit.
+
+## License
+
+MIT — see [LICENSE](LICENSE).
