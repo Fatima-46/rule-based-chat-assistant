@@ -1,6 +1,5 @@
 """
-InternGrow Python Programming Track - Task 4
-Intelligent Rule-Based Assistant (Web App - Streamlit)
+Rule-Based Chat Assistant (Web App - Streamlit)
 
 Features:
 - Conditional conversation bot with clean input processing
@@ -20,7 +19,7 @@ import streamlit as st
 RULES = [
     (["hello", "hi", "hey"], "Hello! I'm your rule-based assistant. Ask me anything."),
     (["how are you"], "I'm just code, but I'm running smoothly! How can I help you?"),
-    (["your name", "who are you"], "I'm a simple rule-based chatbot built for the InternGrow internship."),
+    (["your name", "who are you"], "I'm a simple rule-based chatbot built with Python and Streamlit."),
     (["thank", "thanks"], "You're welcome! Happy to help."),
     (["bye", "goodbye", "exit", "quit"], "Goodbye! Have a great day."),
     (["help"], "You can greet me, ask who I am, or ask about any topic — "
@@ -59,7 +58,7 @@ def get_wikipedia_summary(query):
     """
     try:
         url = f"https://en.wikipedia.org/api/rest_v1/page/summary/{query.replace(' ', '_')}"
-       headers = {"User-Agent": "RuleBasedChatAssistant/1.0"}
+        headers = {"User-Agent": "RuleBasedChatAssistant/1.0"}
         resp = requests.get(url, headers=headers, timeout=8)
         if resp.status_code == 200:
             data = resp.json()
@@ -77,7 +76,6 @@ def get_wikipedia_summary(query):
 # ----------------------------
 st.set_page_config(page_title="Rule-Based Assistant", page_icon="🤖")
 st.title("🤖 Intelligent Rule-Based Assistant")
-
 
 st.write(
     "Try greetings like *hello*, *how are you*, *your name*, *joke*, or *help*. "
